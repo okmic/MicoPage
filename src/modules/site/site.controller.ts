@@ -13,7 +13,6 @@ class SiteController {
                     socialMedia: true
                 }    
             })
-            
             return reply.view('home', {content: content})
         } catch (e) {
             console.error(e)
