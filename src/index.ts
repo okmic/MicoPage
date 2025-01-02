@@ -23,7 +23,7 @@ app.register(pointOfView, {
     engine: {
       ejs: ejs
     },
-    root: path.join(__dirname, "..", "..", "app", 'views')
+    root: path.join(__dirname, "..", "..", "app", 'ejs')
 })
 
 app.register(routes)
