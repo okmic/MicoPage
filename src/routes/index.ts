@@ -8,6 +8,7 @@ export default async function routes(fastify: FastifyInstance) {
     fastify.get('/api/ping', pingController.ping)
     fastify.get('/api/visit', visitController.create)
     fastify.get('/', siteController.home)
+    fastify.get('/products', siteController.products)
 
     fastify.setNotFoundHandler((request, reply) => {
         reply.view("error")

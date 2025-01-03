@@ -19,6 +19,24 @@ class SiteController {
             return reply.view('error')
         }
     }
+
+    async products(req: FastifyRequest, reply: FastifyReply) {
+        try {
+            const prisma = new PrismaClient()
+
+            const content: Content = await prisma.content.findFirst({
+                include: {
+                    works: true,
+                    services: {include: {items: true}},
+                    socialMedia: true
+                }    
+            })
+            return reply.view('products', {content: content})
+        } catch (e) {
+            console.error(e)
+            return reply.view('error')
+        }
+    }
 }
 
 export default new SiteController()
