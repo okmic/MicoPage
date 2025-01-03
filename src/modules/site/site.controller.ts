@@ -13,7 +13,7 @@ class SiteController {
                     socialMedia: true
                 }    
             })
-            return reply.view('home', {content: content})
+            return reply.view('home', {content})
         } catch (e) {
             console.error(e)
             return reply.view('error')
@@ -28,10 +28,11 @@ class SiteController {
                 include: {
                     works: true,
                     services: {include: {items: true}},
-                    socialMedia: true
+                    socialMedia: true,
+                    products: true
                 }    
             })
-            return reply.view('products', {content: content})
+            return reply.view('products', {content})
         } catch (e) {
             console.error(e)
             return reply.view('error')
