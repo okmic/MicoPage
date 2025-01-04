@@ -5,6 +5,7 @@ import routes from './routes/index'
 import dotenv from 'dotenv'
 import { errorResponse } from './utils/response.utils'
 import path from 'path'
+import AdminBot from "./modules/admin_telegram"
 
 dotenv.config()
 
@@ -38,6 +39,12 @@ const start = async (): Promise<void> => {
         const PORT = Number(process.env.PORT)
         await app.listen({ port: PORT })
         const address = app.server.address()
+
+        try {
+            new AdminBot(process.env.TG_TOKEN).start()
+        } catch (e) {
+            console.error(e)
+        }
 
         if (typeof address === 'object' && address !== null) {
             app.log.info(`Server listening on ${address.address}:${address.port}`)

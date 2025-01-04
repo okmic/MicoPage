@@ -15,7 +15,6 @@ class SiteController {
             })
             return reply.view('home', {content})
         } catch (e) {
-            console.error(e)
             return reply.view('error')
         }
     }

@@ -1,5 +1,5 @@
 import path from "path"
 
-export const getPathToStorage = () => {
-    return path.resolve(__dirname, "..", "..", "..", "storage")
+export const getPathToApp = () => {
+    return path.resolve(__dirname, "..", "..", "..", "app")
 }
