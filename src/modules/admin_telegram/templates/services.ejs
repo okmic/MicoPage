@@ -1,7 +1,7 @@
 *Услуги:*
 <% if (services.length > 0) { %>
     <% services.forEach(service => { %>
-        - *Услуга №<%= product.id %>|MP|
+        - *Услуга №<%= service.id %>|MP|
         - *Название:* <%= service.title %>
           *Изображение:* <%= service.imgUrl %>
         <% service.items.forEach(item => { %>

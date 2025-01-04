@@ -1,7 +1,7 @@
 *Как это работает:*
 <% if (works.length > 0) { %>
     <% works.forEach(work => { %>
-        - *О работе №<%= product.id %>|MP|
+        - *О работе №<%= work.id %>|MP|
         - *Название:* <%= work.title %>
           *Изображение:* <%= work.imgUrl %>
     <% }) %>
