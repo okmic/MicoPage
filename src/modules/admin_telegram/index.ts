@@ -1,9 +1,9 @@
-import { Bot, Context } from 'grammy'
+import { Bot, Context, session } from 'grammy'
 import { PrismaClient } from '@prisma/client'
-import ejs from 'ejs'
-import path from 'path'
 import dotenv from 'dotenv'
-import telegramAdminContentService from './telegram.admin.content.service'
+import telegramAdminContentService from './content/telegram.admin.content.service'
+import {updateAdminContentMiddleWare} from './middleware/telegram.admin.update.content.middleware.service'
+import { MyContext } from './types'
 
 dotenv.config()
 
@@ -18,17 +18,25 @@ class AdminBot {
   }
 
   private initializeCommands() {
-    
+
+    this.bot.use(session({
+      initial: () => ({
+        updateContent: undefined
+      }) 
+    }))
+    this.bot.use(updateAdminContentMiddleWare)
     this.bot.command("get_content", (ctx) => telegramAdminContentService.getContentDetailsCommand(ctx));
     this.bot.on("callback_query:data", (ctx) => telegramAdminContentService.handleCallbackQuery(ctx));
     this.bot.command('add_service', (ctx) => this.addServiceCommand(ctx))
     this.bot.command('edit_service', (ctx) => this.editServiceCommand(ctx))
     this.bot.command('delete_service', (ctx) => this.deleteServiceCommand(ctx))
     this.bot.command('get_statistics', (ctx) => this.getStatisticsCommand(ctx))
-    this.bot.command('start', (ctx) => this.startCommand(ctx))
+    this.bot.command('start', (ctx) => this.startCommand(ctx as MyContext))
+    
   }
 
-  private async startCommand(ctx: Context) {
+  private async startCommand(ctx: MyContext) {
+    console.log(ctx.session)
     ctx.reply('Добро пожаловать в админку MicoPage! Вот доступные команды:\n/start - Приветствие\n/get_content - Получить контент\n/add_service - Добавить услугу\n/edit_service - Редактировать услугу\n/delete_service - Удалить услугу\n/get_statistics - Получить статистику')
   }
 
