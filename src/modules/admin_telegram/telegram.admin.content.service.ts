@@ -1,11 +1,21 @@
-import { PrismaClient } from "@prisma/client"
-import { Context } from "grammy"
+import { PrismaClient } from "@prisma/client";
+import { Context } from "grammy";
+import ejs from "ejs";
+import path from "path";
+import fs from "fs";
+import { InlineKeyboard } from "grammy";
 
 class TelegramAdminContentService {
-    private prismaClient: PrismaClient
+    private prismaClient: PrismaClient;
 
     constructor() {
-        this.prismaClient = new PrismaClient()
+        this.prismaClient = new PrismaClient();
+    }
+
+    private async renderTemplate(templateName: string, data: object): Promise<string> {
+        const templatePath = path.join(__dirname, 'templates', `${templateName}.ejs`);
+        const template = fs.readFileSync(templatePath, 'utf-8');
+        return ejs.render(template, data);
     }
 
     async getContentDetailsCommand(ctx: Context) {
@@ -20,63 +30,73 @@ class TelegramAdminContentService {
                 socialMedia: true,
                 products: true
             }
-        })
+        });
 
         if (!content) {
-            return ctx.reply('Контент не найден.')
+            return ctx.reply('Контент не найден.');
         }
 
-        await ctx.reply(`*Основная информация сайта*\n\n*Название:* ${content.logoName}\n*Описание компании:* ${content.companyDescription}\n*Адрес:* ${content.address}\n*Телефон:* ${content.phone}\n*Email:* ${content.email}`, { parse_mode: 'Markdown' })
+        // Создаем кнопки
+        const keyboard = new InlineKeyboard()
+            .text("Основная информация", "mainInfo")
+            .row()
+            .text("Работы", "works")
+            .row()
+            .text("Услуги", "services")
+            .row()
+            .text("Социальные медиа", "socialMedia")
+            .row()
+            .text("Продукты", "products");
 
-        // Работы
-        if (content.works.length > 0) {
-            let worksMessage = `*Как это работает:*\n`
-            content.works.forEach(work => {
-                worksMessage += `- *Название:* ${work.title}\n  *Изображение:* ${work.imgUrl}\n`
-            })
-            await ctx.reply(worksMessage, { parse_mode: 'Markdown' })
-        } else {
-            await ctx.reply(`*Как это работает:*\nНет доступных работ.`, { parse_mode: 'Markdown' })
-        }
-
-        // Услуги
-        if (content.services.length > 0) {
-            let servicesMessage = `*Услуги:*\n`
-            content.services.forEach(service => {
-                servicesMessage += `- *Название:* ${service.title}\n  *Изображение:* ${service.imgUrl}\n`
-                service.items.forEach(item => {
-                    servicesMessage += `  - *Элемент:* ${item.text}\n`
-                })
-            })
-            await ctx.reply(servicesMessage, { parse_mode: 'Markdown' })
-        } else {
-            await ctx.reply(`*Услуги:*\nНет доступных услуг.`, { parse_mode: 'Markdown' })
-        }
-
-        // Социальные медиа
-        if (content.socialMedia.length > 0) {
-            let socialMediaMessage = `*Социальные медиа:*\n`
-            content.socialMedia.forEach(social => {
-                socialMediaMessage += `- *Название:* ${social.title}\n  *Ссылка:* ${social.linkToSM}\n  *Изображение:* ${social.imgUrl}\n`
-            })
-            await ctx.reply(socialMediaMessage, { parse_mode: 'Markdown' })
-        } else {
-            await ctx.reply(`*Социальные медиа:*\nНет доступных социальных медиа.`, { parse_mode: 'Markdown' })
-        }
-
-        // Продукты
-        if (content.products.length > 0) {
-            let productsMessage = `*Продукты:*\n`
-            content.products.forEach(product => {
-                productsMessage += `- *Название:* ${product.title}\n  *Описание:* ${product.description}\n  *Цена:* ${product.price}\n  *Изображение:* ${product.imgUrl}\n`
-            })
-            await ctx.reply(productsMessage, { parse_mode: 'Markdown' })
-        } else {
-            await ctx.reply(`*Продукты:*\nНет доступных продуктов.`, { parse_mode: 'Markdown' })
-        }
+        await ctx.reply("Выберите раздел для получения информации:", { reply_markup: keyboard });
     }
+
+    async handleCallbackQuery(ctx: Context) {
+        const content = await this.prismaClient.content.findFirst({
+            include: {
+                services: {
+                    include: {
+                        items: true
+                    }
+                },
+                works: true,
+                socialMedia: true,
+                products: true
+            }
+        });
+
+        if (!content) {
+            return ctx.answerCallbackQuery('Контент не найден.');
+        }
+
+        const action = ctx.callbackQuery.data;
+
+        let message: string;
+
+        switch (action) {
+            case "mainInfo":
+                message = await this.renderTemplate('mainInfo', content);
+                break;
+            case "works":
+                message = await this.renderTemplate('works', content);
+                break;
+            case "services":
+                message = await this.renderTemplate('services', content);
+                break;
+            case "socialMedia":
+                message = await this.renderTemplate('socialMedia', content);
+                break;
+            case "products":
+                message = await this.renderTemplate('products', content);
+                break;
+            default
+            :
+            return ctx.answerCallbackQuery('Неизвестное действие.');
+    }
+
+    await ctx.answerCallbackQuery(); // Убираем индикатор загрузки
+    await ctx.reply(message, { parse_mode: 'Markdown' });
+}
 }
 
-
-
-export default new TelegramAdminContentService()
+export default new TelegramAdminContentService();

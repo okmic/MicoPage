@@ -18,12 +18,14 @@ class AdminBot {
   }
 
   private initializeCommands() {
-    this.bot.command('start', (ctx) => this.startCommand(ctx))
-    this.bot.command('get_content', (ctx) => telegramAdminContentService.getContentDetailsCommand(ctx))
+    
+    this.bot.command("get_content", (ctx) => telegramAdminContentService.getContentDetailsCommand(ctx));
+    this.bot.on("callback_query:data", (ctx) => telegramAdminContentService.handleCallbackQuery(ctx));
     this.bot.command('add_service', (ctx) => this.addServiceCommand(ctx))
     this.bot.command('edit_service', (ctx) => this.editServiceCommand(ctx))
     this.bot.command('delete_service', (ctx) => this.deleteServiceCommand(ctx))
     this.bot.command('get_statistics', (ctx) => this.getStatisticsCommand(ctx))
+    this.bot.command('start', (ctx) => this.startCommand(ctx))
   }
 
   private async startCommand(ctx: Context) {
