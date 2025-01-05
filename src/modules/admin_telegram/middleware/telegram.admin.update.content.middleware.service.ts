@@ -18,13 +18,12 @@ export async function updateAdminContentMiddleWare(ctx: MyContext, next: NextFun
                 else savedKey = kuw.key
             }
         }
-        ctx.session.updateContent = savedKey as KeyContentUpdate
-        return
+
+        if(savedKey) ctx.session.updateContent[ctx.from.id] = savedKey as KeyContentUpdate    
+        else ctx.session.updateContent[ctx.from.id] = undefined
+
+        return await next()
     } catch (e) {
-        console.error(e)
-        await next()
         return
-    } finally {
-        await next()
     }
 }

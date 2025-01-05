@@ -3,7 +3,10 @@ import { PrismaClient } from '@prisma/client'
 import dotenv from 'dotenv'
 import telegramAdminContentService from './content/telegram.admin.content.service'
 import {updateAdminContentMiddleWare} from './middleware/telegram.admin.update.content.middleware.service'
-import { MyContext } from './types'
+import { MyContext, SessionData } from './types'
+import AdminTelegramMessageAction from './admin.telegram.message.action'
+import { ErrorTelegramStopExecution } from '../errors'
+import AdminTelegramButtonsAction from './admin.telegram.buttons.action'
 
 dotenv.config()
 
@@ -18,21 +21,32 @@ class AdminBot {
   }
 
   private initializeCommands() {
-
-    this.bot.use(session({
-      initial: () => ({
-        updateContent: undefined
-      }) 
-    }))
-    this.bot.use(updateAdminContentMiddleWare)
-    this.bot.command("get_content", (ctx) => telegramAdminContentService.getContentDetailsCommand(ctx));
-    this.bot.on("callback_query:data", (ctx) => telegramAdminContentService.handleCallbackQuery(ctx));
-    this.bot.command('add_service', (ctx) => this.addServiceCommand(ctx))
-    this.bot.command('edit_service', (ctx) => this.editServiceCommand(ctx))
-    this.bot.command('delete_service', (ctx) => this.deleteServiceCommand(ctx))
-    this.bot.command('get_statistics', (ctx) => this.getStatisticsCommand(ctx))
-    this.bot.command('start', (ctx) => this.startCommand(ctx as MyContext))
-    
+    try {
+      const initSession: SessionData = {
+        updateContent: {},
+        waitngFromUpdateContent: {}
+      }
+  
+      this.bot.use(session({
+        initial: () => (initSession) 
+      }))
+  
+      this.bot.use(updateAdminContentMiddleWare)
+      new AdminTelegramMessageAction(this.bot).handleMessage()
+      new AdminTelegramButtonsAction(this.bot).handleButtons()
+  
+      this.bot.command("get_content", (ctx) => telegramAdminContentService.getContentDetailsCommand(ctx));
+      this.bot.on("callback_query:data", (ctx) => telegramAdminContentService.handleCallbackQuery(ctx));
+      this.bot.command('add_service', (ctx) => this.addServiceCommand(ctx))
+      this.bot.command('edit_service', (ctx) => this.editServiceCommand(ctx))
+      this.bot.command('delete_service', (ctx) => this.deleteServiceCommand(ctx))
+      this.bot.command('get_statistics', (ctx) => this.getStatisticsCommand(ctx))
+      this.bot.command('start', (ctx) => this.startCommand(ctx as MyContext))
+    } catch (e) {
+      if (e instanceof ErrorTelegramStopExecution) {
+        console.log("executed stop")
+      }
+    }
   }
 
   private async startCommand(ctx: MyContext) {

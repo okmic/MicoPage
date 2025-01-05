@@ -1,8 +1,25 @@
 import { Context, SessionFlavor } from "grammy"
+import { ITelegramAdminContentUpdateHandleEmail, ITelegramAdminContentUpdateHandlePhone } from "./content/update/types"
 
 export interface SessionData {
-  updateContent?: KeyContentUpdate
+
+  updateContent: {
+    [userId: string]: KeyContentUpdate
+  }
+
+  waitngFromUpdateContent:  {
+    [userId: string]: {
+      key: KeyContentUpdate
+      methodName: AdminContentUpdateMethodNames
+      phone?: ITelegramAdminContentUpdateHandlePhone
+      email?: ITelegramAdminContentUpdateHandleEmail
+    }
+  }
+
 }
+
+
+export type AdminContentUpdateMethodNames = "handlePhone" | "handleEmail"
 
 interface MyContext extends Context, SessionFlavor<SessionData> {
 }
