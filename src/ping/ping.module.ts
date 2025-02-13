@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { PingController } from './ping.controller';
-import { PingService } from './ping.service';
+import { PingController } from './ping.controller'
 
 @Module({
   controllers: [PingController],
-  providers: [PingService],
+  providers: [],
 })
 export class PingModule {}

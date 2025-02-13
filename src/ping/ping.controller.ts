@@ -1,13 +1,10 @@
-// src/ping/ping.controller.ts
-import { Controller, Get } from '@nestjs/common';
-import { PingService } from './ping.service';
+import { Controller, Get, Req, Res } from '@nestjs/common';
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 @Controller('ping')
 export class PingController {
-  constructor(private readonly pingService: PingService) {}
-
   @Get()
-  async ping(): Promise<{ msg: string }> {
-    return this.pingService.ping();
+  async ping(@Req() req: FastifyRequest, @Res() reply: FastifyReply) {
+    reply.send({ msg: 'pong' });
   }
 }
