@@ -1,19 +1,18 @@
-// src/mico-page/dto/generate-html.dto.ts
-import { IsArray, IsString, IsNumber } from 'class-validator';
+import { IsArray, IsString, IsNumber } from 'class-validator'
 
-export class GenerateHTMLDto {
+export class GenerateMicoPageEjsDto {
   @IsArray()
-  entryPointPathsToPages: string[];
+  entryPointPathsToPages: string[]
 
   @IsString()
-  exitPointPathToDeploy: string;
+  exitPointPathToDeploy: string
 
   @IsNumber()
-  contentId: number;
+  contentId: number
 
   @IsString()
-  entryPointPath: string;
+  entryPointPath: string
 
   @IsNumber()
-  ftpServerId: number;
+  ftpServerId: number
 }
